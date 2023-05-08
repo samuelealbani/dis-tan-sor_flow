@@ -23,18 +23,21 @@ import * as tfjsWasm from '@tensorflow/tfjs-backend-wasm';
 import * as tf from '@tensorflow/tfjs-core';
 
 tfjsWasm.setWasmPaths(
-    `https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@${
-        tfjsWasm.version_wasm}/dist/`);
+  `https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@${tfjsWasm.version_wasm}/dist/`);
 
 import * as posedetection from '@tensorflow-models/pose-detection';
 
-import {Camera} from './camera';
-import {RendererWebGPU} from './renderer_webgpu';
-import {RendererCanvas2d} from './renderer_canvas2d';
-import {setupDatGui} from './option_panel';
-import {STATE} from './params';
-import {setupStats} from './stats_panel';
-import {setBackendAndEnvFlags} from './util';
+import { Camera } from './camera';
+import { RendererWebGPU } from './renderer_webgpu';
+import { RendererCanvas2d } from './renderer_canvas2d';
+import { setupDatGui } from './option_panel';
+import { STATE } from './params';
+import { setupStats } from './stats_panel';
+import { setBackendAndEnvFlags } from './util';
+
+const OSC = require('osc-js');
+let osc = new OSC();
+osc.open(); // connect by default to ws://localhost:8080
 
 let detector, camera, stats;
 let startInferenceTime, numInferences = 0;
@@ -50,7 +53,7 @@ async function createDetector() {
         quantBytes: 4,
         architecture: 'MobileNetV1',
         outputStride: 16,
-        inputResolution: {width: 500, height: 500},
+        inputResolution: { width: 500, height: 500 },
         multiplier: 0.75
       });
     case posedetection.SupportedModels.BlazePose:
@@ -60,11 +63,11 @@ async function createDetector() {
           runtime,
           modelType: STATE.modelConfig.type,
           solutionPath:
-              `https://cdn.jsdelivr.net/npm/@mediapipe/pose@${mpPose.VERSION}`
+            `https://cdn.jsdelivr.net/npm/@mediapipe/pose@${mpPose.VERSION}`
         });
       } else if (runtime === 'tfjs') {
         return posedetection.createDetector(
-            STATE.model, {runtime, modelType: STATE.modelConfig.type});
+          STATE.model, { runtime, modelType: STATE.modelConfig.type });
       }
     case posedetection.SupportedModels.MoveNet:
       let modelType;
@@ -75,7 +78,7 @@ async function createDetector() {
       } else if (STATE.modelConfig.type == 'multipose') {
         modelType = posedetection.movenet.modelType.MULTIPOSE_LIGHTNING;
       }
-      const modelConfig = {modelType};
+      const modelConfig = { modelType };
 
       if (STATE.modelConfig.customModel !== '') {
         modelConfig.modelUrl = STATE.modelConfig.customModel;
@@ -135,7 +138,7 @@ function endEstimatePosesStats() {
     inferenceTimeSum = 0;
     numInferences = 0;
     stats.customFpsPanel.update(
-        1000.0 / averageInferenceTime, 120 /* maxValue */);
+      1000.0 / averageInferenceTime, 120 /* maxValue */);
     lastPanelUpdate = endInferenceTime;
   }
 }
@@ -166,15 +169,15 @@ async function renderResult() {
     try {
       if (useGpuRenderer) {
         const [posesTemp, canvasInfoTemp] = await detector.estimatePosesGPU(
-            camera.video,
-            {maxPoses: STATE.modelConfig.maxPoses, flipHorizontal: false},
-            true);
+          camera.video,
+          { maxPoses: STATE.modelConfig.maxPoses, flipHorizontal: false },
+          true);
         poses = posesTemp;
         canvasInfo = canvasInfoTemp;
       } else {
         poses = await detector.estimatePoses(
-            camera.video,
-            {maxPoses: STATE.modelConfig.maxPoses, flipHorizontal: false});
+          camera.video,
+          { maxPoses: STATE.modelConfig.maxPoses, flipHorizontal: false });
       }
     } catch (error) {
       detector.dispose();
@@ -184,10 +187,36 @@ async function renderResult() {
 
     endEstimatePosesStats();
   }
+
+
   const rendererParams = useGpuRenderer ?
-      [camera.video, poses, canvasInfo, STATE.modelConfig.scoreThreshold] :
-      [camera.video, poses, STATE.isModelChanged];
+    [camera.video, poses, canvasInfo, STATE.modelConfig.scoreThreshold] :
+    [camera.video, poses, STATE.isModelChanged];
   renderer.draw(rendererParams);
+
+  if (poses && poses.length > 0) {
+    //https://github.com/tommymitch/posenetosc/blob/master/cameraosc.js
+    for (let i = 0; i < poses.length; i++) {
+      const pose = poses[i];
+      // var message = new OSC.Message('/pose/' + i);
+      /*       message.add(pose.keypoints[0].x);
+     osc.send(message); */
+      let message = new OSC.Message('/num_poses');
+      message.add(poses.length);
+      osc.send(message);
+
+      for (let j = 0; j < pose.keypoints.length; j++) {
+        const keypoint = pose.keypoints[j];
+        let message = new OSC.Message('/pose/' + i + '/' + keypoint.name);
+        message.add(keypoint.x);
+        message.add(keypoint.y);
+        message.add(keypoint.score);
+        osc.send(message);
+        console.log(message);
+      }
+    }
+  }
+
 }
 
 async function renderPrediction() {

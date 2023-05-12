@@ -1,7 +1,7 @@
 // from https://radzion.com/blog/linear-algebra/vectors
 
 class Vector {
-  constructor(...components) {
+  constructor (...components) {
     this.components = components;
   }
 
@@ -70,6 +70,26 @@ const OSC = require('osc-js');
 let osc = new OSC();
 osc.open(); // connect by default to ws://localhost:8080
 
+// websocket
+const socket = new WebSocket('ws://localhost:12345');
+let socketConnected = false;
+// Connection opened
+socket.addEventListener('open', (event) => {
+  // socket.send('Hello Server!');
+  socket.send({ 'hello': 'Hello Server!' });
+  socketConnected = true;
+});
+socket.addEventListener('close', (event) => {
+  socketConnected = false;
+  console.log('socket is closed');
+});
+
+// Listen for messages
+socket.addEventListener('message', (event) => {
+  console.log('Message from server ', event.data);
+});
+// [end] websocket
+
 let detector, camera, stats;
 let startInferenceTime, numInferences = 0;
 let inferenceTimeSum = 0, lastPanelUpdate = 0;
@@ -84,7 +104,7 @@ async function createDetector() {
         architecture: 'MobileNetV1',
         outputStride: 16,
         inputResolution: { width: 500, height: 500 },
-        multiplier: 0.75
+        multiplier: 0.75,
       });
     case posedetection.SupportedModels.BlazePose:
       const runtime = STATE.backend.split('-')[0];
@@ -93,7 +113,7 @@ async function createDetector() {
           runtime,
           modelType: STATE.modelConfig.type,
           solutionPath:
-            `https://cdn.jsdelivr.net/npm/@mediapipe/pose@${mpPose.VERSION}`
+            `https://cdn.jsdelivr.net/npm/@mediapipe/pose@${mpPose.VERSION}`,
         });
       } else if (runtime === 'tfjs') {
         return posedetection.createDetector(
@@ -234,7 +254,8 @@ async function renderResult() {
     // which shouldn't be rendered.
     if (poses && poses.length > 0 && !STATE.isModelChanged) {
       camera.drawResults(poses);
-      //https://github.com/tommymitch/posenetosc/blob/master/cameraosc.js
+      let msgArray = [];
+      // https://github.com/tommymitch/posenetosc/blob/master/cameraosc.js
       for (let i = 0; i < poses.length; i++) {
         const pose = poses[i];
         const nose = pose.keypoints[0]; // nose
@@ -242,6 +263,21 @@ async function renderResult() {
         const rightHand = pose.keypoints[10]; // right_elbow
         const leftHip = pose.keypoints[11]; // left_hip
         const rightHip = pose.keypoints[12]; // right_hip
+
+        if (socketConnected) {
+          let msgPoseObj = new Object();
+          msgPoseObj.nPose = i;
+          msgPoseObj.keypoint = nose.name;
+          msgPoseObj.xPos = nose.x / camera.video.width;
+          msgPoseObj.yPos = nose.y / camera.video.height;
+          msgArray.push(msgPoseObj);
+          // let msgJsonString = JSON.stringify(msgObj);
+
+          // socket.send(msgJsonString);
+          // socket.send('x:' + nose.x / camera.video.width + ' y:' + nose.y / camera.video.height);
+        }
+
+        /*
         switch (i) {
           case 0:
             // console.log('nose', pose.keypoints[0]); // nose
@@ -336,59 +372,59 @@ async function renderResult() {
             osc.send(message);
 
 
-            /* ---- */
-            const diffLeftHand0Hip1 = pose0leftHandPos.subtract(pose1leftHipPos);
-            const lengthDistLeftHand0Hip1 = diffLeftHand0Hip1.length();
-            message = new OSC.Message("/distances/leftHand0hip1");
-            message.add(lengthDistLeftHand0Hip1);
-            osc.send(message);
-
-            const diffRightHand0Hip1 = pose0rightHandPos.subtract(pose1leftHipPos);
-            const lengthDistRightHand0Hip1 = diffRightHand0Hip1.length();
-            message = new OSC.Message("/distances/rightHand0hip1");
-            message.add(lengthDistRightHand0Hip1);
-            osc.send(message);
-
-            const diffLeftHand1Hip0 = pose1leftHandPos.subtract(pose0leftHipPos);
-            const lengthDistLeftHand1Hip0 = diffLeftHand1Hip0.length();
-            message = new OSC.Message("/distances/leftHand1hip0");
-            message.add(lengthDistLeftHand1Hip0);
-            osc.send(message);
-
-            const diffRightHand1Hip0 = pose1rightHandPos.subtract(pose0leftHipPos);
-            const lengthDistRightHand1Hip0 = diffRightHand1Hip0.length();
-            message = new OSC.Message("/distances/rightHand1hip0");
-            message.add(lengthDistRightHand1Hip0);
-            osc.send(message);
-
-            /*  */
-            const diffHip0Hip1 = pose0leftHipPos.subtract(pose1leftHipPos);
-            const lengthDistHip0Hip1 = diffHip0Hip1.length();
-            message = new OSC.Message("/distances/hip0hip1");
-            message.add(lengthDistHip0Hip1);
-            osc.send(message);
-
-
-            break;
-
-          default:
-            break;
-        }
-
-
-        let message = new OSC.Message('/num_poses');
-        message.add(poses.length);
+        const diffLeftHand0Hip1 = pose0leftHandPos.subtract(pose1leftHipPos);
+        const lengthDistLeftHand0Hip1 = diffLeftHand0Hip1.length();
+        message = new OSC.Message("/distances/leftHand0hip1");
+        message.add(lengthDistLeftHand0Hip1);
         osc.send(message);
 
-        for (let j = 0; j < pose.keypoints.length; j++) {
-          const keypoint = pose.keypoints[j];
-          let message = new OSC.Message('/pose/' + i + '/' + keypoint.name);
-          message.add(keypoint.x / camera.video.width);
-          message.add(keypoint.y / camera.video.height);
-          message.add(keypoint.score);
-          osc.send(message);
-          console.log(message);
-        }
+        const diffRightHand0Hip1 = pose0rightHandPos.subtract(pose1leftHipPos);
+        const lengthDistRightHand0Hip1 = diffRightHand0Hip1.length();
+        message = new OSC.Message("/distances/rightHand0hip1");
+        message.add(lengthDistRightHand0Hip1);
+        osc.send(message);
+
+        const diffLeftHand1Hip0 = pose1leftHandPos.subtract(pose0leftHipPos);
+        const lengthDistLeftHand1Hip0 = diffLeftHand1Hip0.length();
+        message = new OSC.Message("/distances/leftHand1hip0");
+        message.add(lengthDistLeftHand1Hip0);
+        osc.send(message);
+
+        const diffRightHand1Hip0 = pose1rightHandPos.subtract(pose0leftHipPos);
+        const lengthDistRightHand1Hip0 = diffRightHand1Hip0.length();
+        message = new OSC.Message("/distances/rightHand1hip0");
+        message.add(lengthDistRightHand1Hip0);
+        osc.send(message);
+
+
+        const diffHip0Hip1 = pose0leftHipPos.subtract(pose1leftHipPos);
+        const lengthDistHip0Hip1 = diffHip0Hip1.length();
+        message = new OSC.Message("/distances/hip0hip1");
+        message.add(lengthDistHip0Hip1);
+        osc.send(message);
+
+
+        break;
+
+          default:
+        break;
+      }
+      */
+        /*
+         let message = new OSC.Message('/num_poses');
+                message.add(poses.length);
+                osc.send(message);
+
+                for (let j = 0; j < pose.keypoints.length; j++) {
+                  const keypoint = pose.keypoints[j];
+                  let message = new OSC.Message('/pose/' + i + '/' + keypoint.name);
+                  message.add(keypoint.x / camera.video.width);
+                  message.add(keypoint.y / camera.video.height);
+                  message.add(keypoint.score);
+                  osc.send(message);
+                  console.log(message);
+                }
+                */
         // var message = new OSC.Message('/pose/' + i);
         /*       message.add(pose.keypoints[0].x);
        osc.send(message);
@@ -407,6 +443,24 @@ async function renderResult() {
         }
         */
       }
+      if (socketConnected) {
+        let msgObj = new Object();
+        msgObj.data = msgArray;
+
+        let msgJsonString = JSON.stringify(msgObj);
+        console.log(msgJsonString);
+        socket.send(msgJsonString);
+      }
+
+      /*       let msgObj = new Object();
+            msgObj.nPose = i;
+            msgObj.keypoint = nose.name;
+            msgObj.xPos = nose.x / camera.video.width;
+            msgObj.yPos = nose.y / camera.video.height;
+            msgArray.push(msgObj);
+            let msgJsonString = JSON.stringify(msgObj); */
+
+
     }
   }
 }

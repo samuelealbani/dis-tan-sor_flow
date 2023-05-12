@@ -1,4 +1,5 @@
-/* 
+/* eslint-disable no-trailing-spaces */
+/*
 "bridge" between your UDP and WebSocket clients
 
 to  be excecuted before the main server
@@ -13,6 +14,6 @@ const OSC = require('osc-js');
 const config = { udpClient: { port: 9129 } };
 const osc = new OSC({ plugin: new OSC.BridgePlugin(config) });
 
-console.log("buba");
+console.log('buba');
 
 osc.open(); // start a WebSocket server on port 8080

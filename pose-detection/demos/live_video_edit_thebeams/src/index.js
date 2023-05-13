@@ -467,19 +467,18 @@ async function renderResult() {
       osc.send(message);
 
       // websocket send
-      if (socketConnected) {
+      if (socketConnected && (counter % 12) == 0) {
         let msgObj = new Object();
         msgObj.data = msgArray;
 
         let msgJsonString = JSON.stringify(msgObj);
         // console.log(msgJsonString);
+        // console.log("prin");
         socket.send(msgJsonString);
-      }
-
-      if (counter % 10 == 0) {
-        console.log("prin");
 
       }
+
+
       // socket.send('x:' + nose.x / camera.video.width + ' y:' + nose.y / camera.video.height);
 
       /*       let msgObj = new Object();

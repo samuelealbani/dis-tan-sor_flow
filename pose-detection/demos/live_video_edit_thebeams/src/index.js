@@ -71,7 +71,7 @@ let osc = new OSC();
 osc.open(); // connect by default to ws://localhost:8080
 
 // websocket
-const socket = new WebSocket('ws://localhost:8025'); //12345
+const socket = new WebSocket('ws://10.209.2.60:8025'); //12345
 let socketConnected = false;
 // Connection opened
 socket.addEventListener('open', (event) => {
@@ -95,6 +95,8 @@ let startInferenceTime, numInferences = 0;
 let inferenceTimeSum = 0, lastPanelUpdate = 0;
 let rafId;
 let gpuRenderer = null;
+
+let counter = 0;
 
 async function createDetector() {
   switch (STATE.model) {
@@ -274,14 +276,21 @@ async function renderResult() {
           // let msgJsonString = JSON.stringify(msgObj);
 
           // socket.send(msgJsonString);
-          // socket.send('x:' + nose.x / camera.video.width + ' y:' + nose.y / camera.video.height);
-        }
 
-        let message = new OSC.Message('/nose0');
+        }
+        /* let message = new OSC.Message('/nose0');
         message.add(poses[0].keypoints[0].x / camera.video.width);
         message.add(poses[0].keypoints[0].y / camera.video.height);
         console.log(poses[0].keypoints[0].x / camera.video.width, poses[0].keypoints[0].y / camera.video.height);
+        osc.send(message); */
+
+        let message = new OSC.Message('/pose/' + i + '/nose');
+        message.add(poses[i].keypoints[0].x / camera.video.width);
+        message.add(poses[i].keypoints[0].y / camera.video.height);
+        // console.log(poses[i].keypoints[0].x / camera.video.width, poses[i].keypoints[0].y / camera.video.height);
         osc.send(message);
+
+
 
 
 
@@ -463,9 +472,15 @@ async function renderResult() {
         msgObj.data = msgArray;
 
         let msgJsonString = JSON.stringify(msgObj);
-        console.log(msgJsonString);
-        // socket.send(msgJsonString);
+        // console.log(msgJsonString);
+        socket.send(msgJsonString);
       }
+
+      if (counter % 10 == 0) {
+        console.log("prin");
+
+      }
+      // socket.send('x:' + nose.x / camera.video.width + ' y:' + nose.y / camera.video.height);
 
       /*       let msgObj = new Object();
             msgObj.nPose = i;
@@ -475,7 +490,7 @@ async function renderResult() {
             msgArray.push(msgObj);
             let msgJsonString = JSON.stringify(msgObj); */
 
-
+      counter++;
     }
   }
 }

@@ -21,25 +21,25 @@ export const DEFAULT_LINE_WIDTH = 2;
 export const DEFAULT_RADIUS = 4;
 
 export const VIDEO_SIZE = {
-  '1400 X 680': { width: 1400, height: 1000 },
+  '1400 X 1000': { width: 1400, height: 1000 },
   '640 X 480': { width: 640, height: 480 },
   '640 X 360': { width: 640, height: 360 },
   '360 X 270': { width: 360, height: 270 }
 };
 export const STATE = {
-  camera: { targetFPS: 60, sizeOption: '1400 X 680' },
+  camera: { targetFPS: 60, sizeOption: '1400 X 1000' },
   backend: '',
   flags: {},
   modelConfig: {}
 };
 export const BLAZEPOSE_CONFIG = {
-  maxPoses: 1,
+  maxPoses: 2,
   type: 'full',
   scoreThreshold: 0.65,
   render3D: true
 };
 export const POSENET_CONFIG = {
-  maxPoses: 1,
+  maxPoses: 2,
   scoreThreshold: 0.5
 };
 export const MOVENET_CONFIG = {

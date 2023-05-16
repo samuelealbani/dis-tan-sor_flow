@@ -71,7 +71,7 @@ let osc = new OSC();
 osc.open(); // connect by default to ws://localhost:8080
 
 // websocket
-const socket = new WebSocket('ws://10.209.2.60:8025'); //12345
+const socket = new WebSocket('ws://localhost:8080'); //12345 //ws://10.209.2.60:8025
 let socketConnected = false;
 // Connection opened
 socket.addEventListener('open', (event) => {

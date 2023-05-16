@@ -384,8 +384,8 @@ async function renderResult() {
         for (let j = 0; j < pose.keypoints.length; j++) {
           const keypoint = pose.keypoints[j];
           let message = new OSC.Message('/pose/' + i + '/' + keypoint.name);
-          message.add(keypoint.x);
-          message.add(keypoint.y);
+          message.add(keypoint.x / camera.video.width);
+          message.add(keypoint.y / camera.video.height);
           message.add(keypoint.score);
           osc.send(message);
           console.log(message);

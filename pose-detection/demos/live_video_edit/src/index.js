@@ -1,3 +1,35 @@
+// from https://radzion.com/blog/linear-algebra/vectors
+
+class Vector {
+  constructor (...components) {
+    this.components = components;
+  }
+
+  add({ components }) {
+    return new Vector(
+      ...components.map(
+        (component, index) => this.components[index] + component
+      )
+    );
+  }
+
+  subtract({ components }) {
+    return new Vector(
+      ...components.map(
+        (component, index) => this.components[index] - component
+      )
+    );
+  }
+
+  length() {
+    return Math.hypot(...this.components);
+  }
+
+  normalize() {
+    return this.scaleBy(1 / this.length());
+  }
+}
+
 /**
  * @license
  * Copyright 2021 Google LLC. All Rights Reserved.

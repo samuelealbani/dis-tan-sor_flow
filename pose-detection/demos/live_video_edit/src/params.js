@@ -15,18 +15,19 @@
  * =============================================================================
  */
 import * as posedetection from '@tensorflow-models/pose-detection';
-import {isiOS} from './util';
+import { isiOS } from './util';
 
 export const DEFAULT_LINE_WIDTH = 2;
 export const DEFAULT_RADIUS = 4;
 
 export const VIDEO_SIZE = {
-  '640 X 480': {width: 640, height: 480},
-  '640 X 360': {width: 640, height: 360},
-  '360 X 270': {width: 360, height: 270}
+  '1400 X 680': { width: 1400, height: 1000 },
+  '640 X 480': { width: 640, height: 480 },
+  '640 X 360': { width: 640, height: 360 },
+  '360 X 270': { width: 360, height: 270 }
 };
 export const STATE = {
-  camera: {targetFPS: 60, sizeOption: '640 X 480'},
+  camera: { targetFPS: 60, sizeOption: '1400 X 680' },
   backend: '',
   flags: {},
   modelConfig: {}

@@ -223,6 +223,12 @@ async function renderResult() {
   } else {
     camera.drawCtx();
 
+    let pose0NosePos, pose1NosePos;
+    let pose0leftHandPos, pose0rightHandPos;
+    let pose1leftHandPos, pose1rightHandPos;
+    let pose0leftHipPos, pose0rightHipPos;
+    let pose1leftHipPos, pose1rightHipPos;
+
     // The null check makes sure the UI is not in the middle of changing to a
     // different model. If during model change, the result is from an old model,
     // which shouldn't be rendered.
@@ -231,6 +237,143 @@ async function renderResult() {
       //https://github.com/tommymitch/posenetosc/blob/master/cameraosc.js
       for (let i = 0; i < poses.length; i++) {
         const pose = poses[i];
+        const nose = pose.keypoints[0]; // nose
+        const leftHand = pose.keypoints[9]; // left_wrist
+        const rightHand = pose.keypoints[10]; // right_elbow
+        const leftHip = pose.keypoints[11]; // left_hip
+        const rightHip = pose.keypoints[12]; // right_hip
+        switch (i) {
+          case 0:
+            // console.log('nose', pose.keypoints[0]); // nose
+            pose0NosePos = new Vector(
+              nose.x / camera.video.width,
+              nose.y / camera.video.height
+            );
+
+            pose0leftHandPos = new Vector(
+              leftHand.x / camera.video.width,
+              leftHand.y / camera.video.height
+            );
+            pose0rightHandPos = new Vector(
+              rightHand.x / camera.video.width,
+              rightHand.y / camera.video.height
+            );
+
+            pose0leftHipPos = new Vector(
+              leftHip.x / camera.video.width,
+              leftHip.y / camera.video.height
+            );
+            pose0rightHipPos = new Vector(
+              rightHip.x / camera.video.width,
+              rightHip.y / camera.video.height
+            );
+
+            break;
+          case 1:
+            pose1NosePos = new Vector(
+              nose.x / camera.video.width,
+              nose.y / camera.video.height
+            );
+
+            pose1leftHandPos = new Vector(
+              leftHand.x / camera.video.width,
+              leftHand.y / camera.video.height
+            );
+            pose1rightHandPos = new Vector(
+              rightHand.x / camera.video.width,
+              rightHand.y / camera.video.height
+            );
+
+            pose1leftHipPos = new Vector(
+              leftHip.x / camera.video.width,
+              leftHip.y / camera.video.height
+            );
+            pose1rightHipPos = new Vector(
+              rightHip.x / camera.video.width,
+              rightHip.y / camera.video.height
+            );
+
+            const diffNose = pose0NosePos.subtract(pose1NosePos);
+            const lengthDistNose = diffNose.length();
+            let message = new OSC.Message("/distances/noses");
+            message.add(lengthDistNose);
+            osc.send(message);
+
+            const diffLeftHand = pose0leftHandPos.subtract(pose1leftHandPos);
+            const lengthDistLeftHand = diffLeftHand.length();
+            message = new OSC.Message("/distances/leftHands");
+            message.add(lengthDistLeftHand);
+            osc.send(message);
+
+            const diffRightHand = pose0rightHandPos.subtract(pose1rightHandPos);
+            const lengthDistRightHand = diffRightHand.length();
+            message = new OSC.Message("/distances/rightHands");
+            message.add(lengthDistRightHand);
+            osc.send(message);
+
+            const diffLeftHand0Nose1 = pose0leftHandPos.subtract(pose1NosePos);
+            const lengthDistLeftHand0Nose1 = diffLeftHand0Nose1.length();
+            message = new OSC.Message("/distances/leftHand0nose1");
+            message.add(lengthDistLeftHand0Nose1);
+            osc.send(message);
+
+            const diffRightHand0Nose1 = pose0rightHandPos.subtract(pose1NosePos);
+            const lengthDistRightHand0Nose1 = diffRightHand0Nose1.length();
+            message = new OSC.Message("/distances/rightHand0nose1");
+            message.add(lengthDistRightHand0Nose1);
+            osc.send(message);
+
+            const diffLeftHand1Nose0 = pose1leftHandPos.subtract(pose0NosePos);
+            const lengthDistLeftHand1Nose0 = diffLeftHand1Nose0.length();
+            message = new OSC.Message("/distances/leftHand1nose0");
+            message.add(lengthDistLeftHand1Nose0);
+            osc.send(message);
+
+            const diffRightHand1Nose0 = pose1rightHandPos.subtract(pose0NosePos);
+            const lengthDistRightHand1Nose0 = diffRightHand1Nose0.length();
+            message = new OSC.Message("/distances/rightHand1nose0");
+            message.add(lengthDistRightHand1Nose0);
+            osc.send(message);
+
+
+            /* ---- */
+            const diffLeftHand0Hip1 = pose0leftHandPos.subtract(pose1leftHipPos);
+            const lengthDistLeftHand0Hip1 = diffLeftHand0Hip1.length();
+            message = new OSC.Message("/distances/leftHand0hip1");
+            message.add(lengthDistLeftHand0Hip1);
+            osc.send(message);
+
+            const diffRightHand0Hip1 = pose0rightHandPos.subtract(pose1leftHipPos);
+            const lengthDistRightHand0Hip1 = diffRightHand0Hip1.length();
+            message = new OSC.Message("/distances/rightHand0hip1");
+            message.add(lengthDistRightHand0Hip1);
+            osc.send(message);
+
+            const diffLeftHand1Hip0 = pose1leftHandPos.subtract(pose0leftHipPos);
+            const lengthDistLeftHand1Hip0 = diffLeftHand1Hip0.length();
+            message = new OSC.Message("/distances/leftHand1hip0");
+            message.add(lengthDistLeftHand1Hip0);
+            osc.send(message);
+
+            const diffRightHand1Hip0 = pose1rightHandPos.subtract(pose0leftHipPos);
+            const lengthDistRightHand1Hip0 = diffRightHand1Hip0.length();
+            message = new OSC.Message("/distances/rightHand1hip0");
+            message.add(lengthDistRightHand1Hip0);
+            osc.send(message);
+
+            /*  */
+            const diffHip0Hip1 = pose0leftHipPos.subtract(pose1leftHipPos);
+            const lengthDistHip0Hip1 = diffHip0Hip1.length();
+            message = new OSC.Message("/distances/hip0hip1");
+            message.add(lengthDistHip0Hip1);
+            osc.send(message);
+
+
+            break;
+
+          default:
+            break;
+        }
         // var message = new OSC.Message('/pose/' + i);
         /*       message.add(pose.keypoints[0].x);
        osc.send(message); */

@@ -1,7 +1,7 @@
 // from https://radzion.com/blog/linear-algebra/vectors
 
 class Vector {
-  constructor(...components) {
+  constructor (...components) {
     this.components = components;
   }
 
@@ -65,6 +65,7 @@ import { Context } from './camera';
 import { setupDatGui } from './option_panel';
 import { STATE } from './params';
 import { setBackendAndEnvFlags } from './util';
+
 const OSC = require('osc-js');
 let osc = new OSC();
 osc.open(); // connect by default to ws://localhost:8080

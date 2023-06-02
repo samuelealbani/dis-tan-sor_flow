@@ -76,7 +76,7 @@ document.getElementById('send').addEventListener('click', () => {
 
 
 // websocket
-const socket = new WebSocket('ws://localhost:8080'); //12345 //ws://10.209.2.60:8025
+const socket = new WebSocket('ws://10.209.2.60:8025'); //12345 //ws://10.209.2.60:8025 // ws://localhost:8080
 let socketConnected = false;
 // Connection opened
 socket.addEventListener('open', (event) => {
@@ -206,17 +206,30 @@ async function renderResult() {
         msgArray.push(msgPoseObj);
       }
 
-      let message = new OSC.Message('/pose/' + i + '/nose');
+      /* let message = new OSC.Message('/pose/' + i + '/nose');
       message.add(poses[i].keypoints[0].x / camera.video.width);
       message.add(poses[i].keypoints[0].y / camera.video.height);
       // console.log(poses[i].keypoints[0].x / camera.video.width, poses[i].keypoints[0].y / camera.video.height);
-      osc.send(message);
+      osc.send(message); */
     }
 
     // direct osc
     let message = new OSC.Message('/num_poses');
     message.add(poses.length);
     osc.send(message);
+
+    msgArray = msgArray.sort((a, b) => {
+      if (a.xPos < b.xPos) {
+        return -1;
+      }
+    });
+
+    for (let i = 0; i < msgArray.length; i++) {
+      let message = new OSC.Message('/pose/' + i + '/nose');
+      message.add(msgArray[i].xPos);
+      message.add(msgArray[i].yPos);
+      osc.send(message);
+    }
 
     // websocket send
     if (socketConnected && (counter % 12) == 0) {

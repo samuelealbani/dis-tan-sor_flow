@@ -71,7 +71,7 @@ let osc = new OSC();
 osc.open(); // connect by default to ws://localhost:8080
 
 // websocket
-const socket = new WebSocket('ws://localhost:8080'); //12345 //ws://10.209.2.60:8025
+const socket = new WebSocket('ws://10.209.2.60:8025'); //12345 //ws://10.209.2.60:8025 //ws://localhost:8080
 let socketConnected = false;
 // Connection opened
 socket.addEventListener('open', (event) => {
@@ -278,21 +278,12 @@ async function renderResult() {
           // socket.send(msgJsonString);
 
         }
-        /* let message = new OSC.Message('/nose0');
-        message.add(poses[0].keypoints[0].x / camera.video.width);
-        message.add(poses[0].keypoints[0].y / camera.video.height);
-        console.log(poses[0].keypoints[0].x / camera.video.width, poses[0].keypoints[0].y / camera.video.height);
-        osc.send(message); */
 
         let message = new OSC.Message('/pose/' + i + '/nose');
         message.add(poses[i].keypoints[0].x / camera.video.width);
         message.add(poses[i].keypoints[0].y / camera.video.height);
         // console.log(poses[i].keypoints[0].x / camera.video.width, poses[i].keypoints[0].y / camera.video.height);
         osc.send(message);
-
-
-
-
 
         /*
         switch (i) {

@@ -187,11 +187,11 @@ async function renderResult() {
   }
   if (gpuRenderer) {
     gpuRenderer.draw(camera.video, poses, canvasInfo, STATE.modelConfig.scoreThreshold);
-    
+
   } else {
-    
-    // camera.drawCtx();
-    camera.drawRect();
+
+    camera.drawCtx();
+    //camera.drawRect();
 
     // The null check makes sure the UI is not in the middle of changing to a
     // different model. If during model change, the result is from an old model,
@@ -257,8 +257,8 @@ async function app() {
   if (useGpuRenderer) {
     const canvas = document.getElementById('output');
     gpuRenderer = await RendererWebGPU.setup(canvas, importVideo);
-    
-  } 
+
+  }
 
   renderPrediction();
 };

@@ -39,7 +39,7 @@ export const BLAZEPOSE_CONFIG = {
   render3D: true
 };
 export const POSENET_CONFIG = {
-  maxPoses: 2,
+  maxPoses: 20,
   scoreThreshold: 0.5
 };
 export const MOVENET_CONFIG = {

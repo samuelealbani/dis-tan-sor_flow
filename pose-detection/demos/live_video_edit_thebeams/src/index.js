@@ -243,7 +243,10 @@ async function renderResult() {
     gpuRenderer.draw(
       camera.video, poses, canvasInfo, STATE.modelConfig.scoreThreshold);
   } else {
-    camera.drawCtx();
+
+
+    // camera.drawCtx();
+    camera.drawRect();
 
     let pose0NosePos, pose1NosePos;
     let pose0leftHandPos, pose0rightHandPos;
@@ -466,6 +469,7 @@ async function renderResult() {
         // console.log(msgJsonString);
         // console.log("prin");
         socket.send(msgJsonString);
+
 
       }
 
